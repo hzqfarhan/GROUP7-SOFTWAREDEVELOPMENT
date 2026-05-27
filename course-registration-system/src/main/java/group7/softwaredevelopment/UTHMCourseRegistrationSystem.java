@@ -1,6 +1,11 @@
 import java.sql.*;
 import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import io.github.cdimascio.dotenv.Dotenv;
 
 class DatabaseConnection {
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
