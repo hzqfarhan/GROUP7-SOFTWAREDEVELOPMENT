@@ -1,3 +1,7 @@
+CREATE TABLE IF NOT EXISTS admins (
+       username VARCHAR(50) PRIMARY KEY,
+       password VARCHAR(100) NOT NULL
+
 CREATE TABLE IF NOT EXISTS students (
     matric_number VARCHAR(20) PRIMARY KEY,
     name VARCHAR(100) NOT NULL
