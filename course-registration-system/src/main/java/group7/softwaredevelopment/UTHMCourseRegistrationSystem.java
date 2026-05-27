@@ -28,6 +28,30 @@ class Person {
     public void setName(String name) { this.name = name; }
 }
 
+class Student extends Person {
+       String matricNumber;
+       public Student(String name, String matricNumber) { super(name); this.matricNumber = matricNumber; }
+       public String getMatricNumber() { return matricNumber; }
+   
+       public int getTotalCreditHours() {
+           int total = 0;
+           String query = "SELECT SUM(c.credit_hours) AS total_credits FROM student_courses sc JOIN courses c ON sc.course_code = c.course_code WHERE sc.matric_number = ?";
+           try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+               stmt.setString(1, this.matricNumber); ResultSet rs = stmt.executeQuery();
+               if (rs.next()) total = rs.getInt("total_credits");
+           } catch (SQLException e) {}
+           return total;
+       }
+   
+       public boolean isRegistered(String courseCode) {
+           String query = "SELECT 1 FROM student_courses WHERE matric_number = ? AND course_code = ?";
+           try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+               stmt.setString(1, this.matricNumber); stmt.setString(2, courseCode);
+               return stmt.executeQuery().next();
+           } catch (SQLException e) { return false; }
+       }
+   }
+
 class Course {
        String courseCode;
        String courseName;
@@ -68,7 +92,7 @@ public class UTHMCourseRegistrationSystem {
    
                switch (choice) {
                    case 1: adminMenu(); break;
-                   case 2: System.out.println("Student menu not implemented yet."); break;
+                   case 2: studentMenu(); break;
                    case 3: System.out.println("Exiting the system. Thank you!"); break;
                    default: System.out.println("Invalid option. Please try again.");
                }
@@ -206,6 +230,83 @@ public class UTHMCourseRegistrationSystem {
                } catch (SQLException e) {}
        }
     
-    public static void adminMenu() { System.out.println("Admin menu coming soon..."); }
-    public static void studentMenu() { System.out.println("Student menu coming soon..."); }
+    public static void studentMenu() {
+           System.out.print("\nEnter your Matric Number: ");
+           String matric = input.nextLine();
+           Student currentStudent = null;
+           String query = "SELECT name, matric_number FROM students WHERE matric_number = ?";
+           try (Connection conn = DatabaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+               stmt.setString(1, matric); ResultSet rs = stmt.executeQuery();
+               if (rs.next()) currentStudent = new Student(rs.getString("name"), rs.getString("matric_number"));
+           } catch (SQLException e) {}
+           
+           if (currentStudent == null) { System.out.println("Error: Student record not found."); return; }
+           
+           int choice = 0;
+           do {
+               System.out.println("\n--- Student Menu --- (" + currentStudent.getName() + ")");
+               System.out.println("1. View Available Courses\n2. Register for a Course\n3. Drop a Course\n4. View My Courses\n5. Back to Main Menu");
+               System.out.print("Select operation: "); choice = input.nextInt(); input.nextLine();
+               switch (choice) {
+                   case 1: viewAllCourses(); break;
+                   case 2: registerCourseAction(currentStudent); break;
+                   case 3: dropCourseAction(currentStudent); break;
+                   case 4: viewMyCourses(currentStudent); break;
+                   case 5: break;
+               }
+           } while (choice != 5);
+       }
+   
+       public static void registerCourseAction(Student s) {
+           System.out.print("Enter Course Code to register: "); String code = input.nextLine();
+           Course c = null;
+           try (Connection conn = DatabaseConnection.getConnection()) {
+               String courseQuery = "SELECT * FROM courses WHERE course_code = ?";
+               try (PreparedStatement stmt = conn.prepareStatement(courseQuery)) {
+                   stmt.setString(1, code); ResultSet rs = stmt.executeQuery();
+                   if (rs.next()) c = new Course(rs.getString("course_code"), rs.getString("course_name"), rs.getInt("credit_hours"), rs.getInt("max_seats"), rs.getInt("enrolled_seats"));
+               }
+               if (c == null) { System.out.println("Error: Course does not exist."); return; }
+               if (s.isRegistered(code)) { System.out.println("Error: Already registered."); }
+               else if (c.isFull()) { System.out.println("Error: Course full."); }
+               else if ((s.getTotalCreditHours() + c.getCreditHours()) > MAX_CREDITS) { System.out.println("Error: Exceeds " + MAX_CREDITS + " credits."); }
+               else {
+                   conn.setAutoCommit(false);
+                   try {
+                       String insertMapping = "INSERT INTO student_courses (matric_number, course_code) VALUES (?, ?)";
+                       try (PreparedStatement stmt1 = conn.prepareStatement(insertMapping)) { stmt1.setString(1, s.getMatricNumber()); stmt1.setString(2, code); stmt1.executeUpdate(); }
+                       String updateSeats = "UPDATE courses SET enrolled_seats = enrolled_seats + 1 WHERE course_code = ?";
+                       try (PreparedStatement stmt2 = conn.prepareStatement(updateSeats)) { stmt2.setString(1, code); stmt2.executeUpdate(); }
+                       conn.commit(); System.out.println("\nSuccess! Registered for " + c.getCourseCode());
+                   } catch (SQLException ex) { conn.rollback(); } finally { conn.setAutoCommit(true); }
+               }
+           } catch (SQLException e) {}
+       }
+   
+       public static void dropCourseAction(Student s) {
+           viewMyCourses(s);
+           System.out.print("Enter Course Code to drop: "); String code = input.nextLine();
+           if (s.isRegistered(code)) {
+               try (Connection conn = DatabaseConnection.getConnection()) {
+                   conn.setAutoCommit(false);
+                   try {
+                    String deleteMapping = "DELETE FROM student_courses WHERE matric_number = ? AND course_code = ?";
+                       try (PreparedStatement stmt1 = conn.prepareStatement(deleteMapping)) { stmt1.setString(1, s.getMatricNumber()); stmt1.setString(2, code); stmt1.executeUpdate(); }
+                       String updateSeats = "UPDATE courses SET enrolled_seats = enrolled_seats - 1 WHERE course_code = ?";
+                       try (PreparedStatement stmt2 = conn.prepareStatement(updateSeats)) { stmt2.setString(1, code); stmt2.executeUpdate(); }
+                       conn.commit(); System.out.println("\nCourse dropped successfully.");
+                   } catch (SQLException ex) { conn.rollback(); } finally { conn.setAutoCommit(true); }
+               } catch (SQLException e) {}
+           }
+       }
+   
+       public static void viewMyCourses(Student s) {
+           String query = "SELECT c.course_code, c.course_name, c.credit_hours FROM courses c JOIN student_courses sc ON c.course_code = sc.course_code WHERE sc.matric_number = ?";
+           try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+               stmt.setString(1, s.getMatricNumber()); ResultSet rs = stmt.executeQuery();
+               System.out.println("\nYour Registered Courses:");
+               while (rs.next()) System.out.println("- " + rs.getString("course_code") + ": " + rs.getString("course_name"));
+           } catch (SQLException e) {}
+       }
 }
