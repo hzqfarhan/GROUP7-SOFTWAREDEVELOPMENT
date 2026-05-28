@@ -49,16 +49,16 @@ class Student extends Person {
 
     // Constructor to initialize a student with a name and matric number
     public Student(String name, String matricNumber) {
-        super(name); // Calls the constructor of the parent class (Person)
+        super(name); // Calls the constructor of the parent Person class
         this.matricNumber = matricNumber;
     }
 
-    // Getter for matric number
+    // Getter method for matric number
     public String getMatricNumber() {
         return matricNumber;
     }
 
-    // Calculates the total credit hours a student is currently registered for
+    // Method to calculate the total credit hours a student is currently registered for
     public int getTotalCreditHours() {
         int total = 0;
         // SQL query to sum up credit hours of all courses registered by this student
@@ -70,7 +70,7 @@ class Student extends Person {
             stmt.setString(1, this.matricNumber); // Insert matric number into the query
             ResultSet rs = stmt.executeQuery();
             
-            // If a result is found, retrieve the sum
+            // Get the total credit if result is found
             if (rs.next())
                 total = rs.getInt("total_credits");
         } catch (SQLException e) {
@@ -79,7 +79,7 @@ class Student extends Person {
         return total;
     }
 
-    // Checks if the student is already registered for a specific course
+    // Method to check if the student is already registered for a specific course
     public boolean isRegistered(String courseCode) {
         // SQL query to look for a matching record
         String query = "SELECT 1 FROM student_courses WHERE matric_number = ? AND course_code = ?";
@@ -368,7 +368,7 @@ public class UTHMCourseRegistrationSystem {
     public static void studentMenu() {
         // Authenticate student by matric number
         System.out.print("\nEnter your Matric Number: ");
-        String matric = input.nextLine();
+        String matric = input.nextLine(); // Get input from user
         Student currentStudent = null;
         
         String query = "SELECT name, matric_number FROM students WHERE matric_number = ?";
@@ -376,25 +376,26 @@ public class UTHMCourseRegistrationSystem {
              PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, matric);
             ResultSet rs = stmt.executeQuery();
-            // If student exists, create a Student object to manage their session
+            // If student exists (in database), create a Student object to manage their session
             if (rs.next())
                 currentStudent = new Student(rs.getString("name"), rs.getString("matric_number"));
         } catch (SQLException e) {
         }
 
+        // Show error if student does not exist
         if (currentStudent == null) {
             System.out.println("Error: Student record not found.");
             return;
         }
 
         int choice = 0;
-        // Student Operations Loop
+        // Student Operations Menu Loop
         do {
             System.out.println("\n--- Student Menu --- (" + currentStudent.getName() + ")");
             System.out.println("1. View Available Courses\n2. Register for a Course\n3. Drop a Course\n4. View My Courses\n5. Back to Main Menu");
             System.out.print("Select operation: ");
             choice = input.nextInt();
-            input.nextLine();
+            input.nextLine(); // Clear the scanner buffer
             
             // Route to specific student functions
             switch (choice) {
@@ -483,7 +484,7 @@ public class UTHMCourseRegistrationSystem {
                 // Use transactions (like in registration) to ensure database consistency
                 conn.setAutoCommit(false);
                 try {
-                    // Step 1: Remove the student-course link
+                    // Step 1: Remove the student-course link (delete registration record)
                     String deleteMapping = "DELETE FROM student_courses WHERE matric_number = ? AND course_code = ?";
                     try (PreparedStatement stmt1 = conn.prepareStatement(deleteMapping)) {
                         stmt1.setString(1, s.getMatricNumber());
