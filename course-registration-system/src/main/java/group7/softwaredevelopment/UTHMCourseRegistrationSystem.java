@@ -20,6 +20,7 @@ class DatabaseConnection {
 }
 
 // Base class representing a general person
+//Demonstrates encapsulation by protecting the 'name' field and exposing it through getter and setter
 class Person {
     String name;
 
@@ -43,7 +44,7 @@ class Person {
     }
 }
 
-// Student class that inherits from Person
+// Student class that inherits from Person, reuse its properties while adding specialized attributes
 class Student extends Person {
     String matricNumber;
 
@@ -143,7 +144,7 @@ public class UTHMCourseRegistrationSystem {
             System.out.println("3. Exit");
             System.out.print("\nSelect an option: ");
             choice = input.nextInt();
-            input.nextLine(); // Consume the newline character left by nextInt()
+            input.nextLine(); // Consume the newline character left by nextInt() to prevent input issues
 
             // Navigate to the appropriate menu based on user input
             switch (choice) {
@@ -440,6 +441,7 @@ public class UTHMCourseRegistrationSystem {
                 // All checks passed; proceed with registration
                 
                 // Disable auto-commit to run multiple queries as a single transaction
+                //Ensures no partial updates if one query fails
                 conn.setAutoCommit(false); 
                 try {
                     // Step 1: Map the student to the course
@@ -462,6 +464,7 @@ public class UTHMCourseRegistrationSystem {
                     System.out.println("\nSuccess! Registered for " + c.getCourseCode());
                 } catch (SQLException ex) {
                     // If any query fails, undo (rollback) all changes to prevent corrupted data
+                    //Prevents situations where student is registered but seat counts aren't updated
                     conn.rollback();
                 } finally {
                     // Always turn auto-commit back on to avoid affecting future operations
@@ -469,6 +472,7 @@ public class UTHMCourseRegistrationSystem {
                 }
             }
         } catch (SQLException e) {
+            //Handle errors related to database or transaction management
         }
     }
 
