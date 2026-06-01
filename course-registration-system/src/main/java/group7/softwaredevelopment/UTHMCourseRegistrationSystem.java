@@ -2,11 +2,14 @@ import java.sql.*;
 import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
 
-// Manages the connection to the MySQL database
+// [OOP Element: Classes & Attributes]
+// Manages the connection to the MySWL database
+// This class encapsulates database configuration
 class DatabaseConnection {
     // Loads environment variables from a .env file securely
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
+    // [Process: Database Connection Initialization]
     // Method to establish connection to the database
     public static Connection getConnection() throws SQLException {
         // Read environment variables for database connection details
@@ -19,47 +22,58 @@ class DatabaseConnection {
     }
 }
 
+// [OOP Element: Classes & Attributes]
 // Base class representing a general person
-//Demonstrates encapsulation by protecting the 'name' field and exposing it through getter and setter
+// Demonstrates encapsulation by protecting the 'name' field and exposing it through getter and setter
 class Person {
     String name;
 
+    // [OOP Element: Constructors]
     // Default constructor
     public Person() {
     }
 
+    // [OOP Element: Constructors]
     // Parameterized constructor to set the name
     public Person(String name) {
         this.name = name;
     }
 
+    // [OOP Element: Accessors/Getters]
     // Getter for name
     public String getName() {
         return name;
     }
 
+    // [OOP Element: Mutators/Setters]
     // Setter for name
     public void setName(String name) {
         this.name = name;
     }
 }
 
-// Student class that inherits from Person, reuse its properties while adding specialized attributes
+// [OOP Element: Inheritance]
+// Student class that inherits from Person, reuse its properties with specialized attributes
 class Student extends Person {
     String matricNumber;
 
+    // [OOP Element: Constructors & Methods]
     // Constructor to initialize a student with a name and matric number
     public Student(String name, String matricNumber) {
         super(name); // Calls the constructor of the parent Person class
         this.matricNumber = matricNumber;
     }
 
+    // [OOP Element: Accessors/Getters]
     // Getter method for matric number
     public String getMatricNumber() {
         return matricNumber;
     }
 
+    // [OOP Element: Methods]
+    // [Data Structure: RDBMS]
     // Method to calculate the total credit hours a student is currently registered for
+    // Process: Executes a SQL query (SUM and JOIN) on the database
     public int getTotalCreditHours() {
         int total = 0;
         // SQL query to sum up credit hours of all courses registered by this student
@@ -80,7 +94,10 @@ class Student extends Person {
         return total;
     }
 
+    // [OOP Element: Methods]
+    // [Data Structure: RDBMS]
     // Method to check if the student is already registered for a specific course
+    // Process: Looks up existential data records across structural relational tables
     public boolean isRegistered(String courseCode) {
         // SQL query to look for a matching record
         String query = "SELECT 1 FROM student_courses WHERE matric_number = ? AND course_code = ?";
@@ -96,6 +113,7 @@ class Student extends Person {
     }
 }
 
+// [OOP Element: Classes & Attributes]]
 // Represents a university course
 class Course {
     String courseCode;
@@ -104,6 +122,7 @@ class Course {
     int maxSeats;
     int enrolledSeats;
 
+    // [OOP Element: Constructors]
     // Constructor to initialize course details
     public Course(String courseCode, String courseName, int creditHours, int maxSeats, int enrolledSeats) {
         this.courseCode = courseCode;
@@ -113,6 +132,7 @@ class Course {
         this.enrolledSeats = enrolledSeats;
     }
 
+    // [OOP Element: Accessors/Getters]
     // Getters for course attributes
     public String getCourseCode() { return courseCode; }
     public String getCourseName() { return courseName; }
@@ -120,19 +140,22 @@ class Course {
     public int getMaxSeats() { return maxSeats; }
     public int getEnrolledSeats() { return enrolledSeats; }
 
+    // [OOP Element: Methods]
     // Helper method to check if the course has reached maximum capacity
     public boolean isFull() {
         return enrolledSeats >= maxSeats;
     }
 }
 
-// Main application class
+// [OOP Elements: Classes]
+// Main application class coordinating operational workflows
 public class UTHMCourseRegistrationSystem {
     // Scanner for reading user input from the console
     static Scanner input = new Scanner(System.in);
     // Global constant defining the maximum credits a student can take
     static final int MAX_CREDITS = 20;
 
+    // [Process: Main System Initialization Loop]
     // The entry point of the program
     public static void main(String[] args) {
         int choice = 0;
@@ -163,6 +186,7 @@ public class UTHMCourseRegistrationSystem {
         } while (choice != 3); // Keep running until the user selects 'Exit'
     }
 
+    // [Process: Admin Control Menu & Authentication]
     // Handles administrator operations
     public static void adminMenu() {
         // Admin Authentication
@@ -224,7 +248,8 @@ public class UTHMCourseRegistrationSystem {
 
     // --- Admin Database Operations ---
 
-    // Inserts a new student record into the database
+    // [Requirements Check (1): Admin can add new student records]
+    // [Data Structure: RDBMS]
     public static void addStudent() {
         System.out.print("Enter Student Name: ");
         String name = input.nextLine();
@@ -243,7 +268,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Deletes a student record based on matric number
+    // [Requirements Check (2): Admin can remove student records]
+    // [Data Structure: RDBMS]
     public static void removeStudent() {
         System.out.print("Enter Matric Number to remove: ");
         String matric = input.nextLine();
@@ -259,7 +285,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Retrieves and prints all registered students
+    // [Requirements Check (3): Admin can view all student records]
+    // [Data Structure: RDBMS]
     public static void viewAllStudents() {
         String query = "SELECT matric_number, name FROM students";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -273,7 +300,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Looks up a specific student by their matric number
+    // [Requirements Check (4): Admin can search for specific student records]
+    // [Data Structure: RDBMS]
     public static void searchStudent() {
         System.out.print("Enter Matric Number to search: ");
         String matric = input.nextLine();
@@ -291,7 +319,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Inserts a new course into the database
+    // [Requirements Check (5): Admin can add new course records]
+    // [Data Structure: RDBMS]
     public static void addCourse() {
         System.out.print("Enter Course Code: ");
         String code = input.nextLine();
@@ -318,7 +347,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Deletes a course from the database
+    // [Requirements Check (6): Admin can remove course records]
+    // [Data Structure: RDBMS]
     public static void removeCourse() {
         System.out.print("Enter Course Code to remove: ");
         String code = input.nextLine();
@@ -333,7 +363,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Retrieves and prints all available courses
+    // [Requirements Check (7): Admin can view all course records]
+    // [Data Structure: RDBMS]
     public static void viewAllCourses() {
         String query = "SELECT * FROM courses";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -347,7 +378,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Looks up a specific course by its code
+    // [Requirements Check (8): Admin can search for specific course records]
+    // [Data Structure: RDBMS]
     public static void searchCourse() {
         System.out.print("Enter Course Code to search: ");
         String code = input.nextLine();
@@ -365,6 +397,7 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
+    // [Process: Student Session Authentication Routing]
     // Handles operations for individual students
     public static void studentMenu() {
         // Authenticate student by matric number
@@ -380,7 +413,7 @@ public class UTHMCourseRegistrationSystem {
             // If student exists (in database), create a Student object to manage their session
             if (rs.next())
                 currentStudent = new Student(rs.getString("name"), rs.getString("matric_number"));
-        } catch (SQLException e) {
+        } catch (SQLException e) { //Ignored exception block
         }
 
         // Show error if student does not exist
@@ -409,6 +442,9 @@ public class UTHMCourseRegistrationSystem {
         } while (choice != 5);
     }
 
+    // [Requirements Check (9): Student can register for courses with validation checks]
+    // [Process: Course Registration Validation & ACID Execution]
+    // [Data Structure: RDBMS]
     // Logic for a student attempting to register for a course
     public static void registerCourseAction(Student s) {
         System.out.print("Enter Course Code to register: ");
@@ -476,7 +512,9 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Logic for a student attempting to drop a course
+    // [Requirements Check (10): Student can drop courses with validation checks]
+    // [Process: Atomic Drop Operations Workflow]
+    // [Data Structure: RDBMS]
     public static void dropCourseAction(Student s) {
         viewMyCourses(s); // Show current classes first
         System.out.print("Enter Course Code to drop: ");
@@ -518,7 +556,8 @@ public class UTHMCourseRegistrationSystem {
         }
     }
 
-    // Shows only the courses that a specific student is registered for
+    // [Requirements Check (11): Student can view their registered courses]
+    // [Data Structure: RDBMS]
     public static void viewMyCourses(Student s) {
         // Joins the courses and student_courses tables to find matching records for this student
         String query = "SELECT c.course_code, c.course_name, c.credit_hours FROM courses c JOIN student_courses sc ON c.course_code = sc.course_code WHERE sc.matric_number = ?";
@@ -529,7 +568,7 @@ public class UTHMCourseRegistrationSystem {
             System.out.println("\nYour Registered Courses:");
             while (rs.next())
                 System.out.println("- " + rs.getString("course_code") + ": " + rs.getString("course_name"));
-        } catch (SQLException e) {
+        } catch (SQLException e) { // Ignored exception block
         }
     }
 }
