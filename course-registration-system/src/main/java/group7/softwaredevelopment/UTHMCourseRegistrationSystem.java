@@ -3,11 +3,34 @@ import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
 
 // [OOP Element: Classes & Attributes]
-// Manages the connection to the MySWL database
+// Manages the connection to the MySQL database
 // This class encapsulates database configuration
 class DatabaseConnection {
     // Loads environment variables from a .env file securely
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+    // --- NEW METHOD: To print startup progress ---
+    public static void testConnectionOnStartup() {
+        System.out.println("Initiating system startup...");
+        System.out.print("1. Loading environment variables... ");
+        
+        String url = dotenv.get("MYSQL_URL");
+        if(url != null) {
+            System.out.println("[OK]");
+        } else {
+            System.out.println("[FAILED - Missing MYSQL_URL in .env]");
+            return;
+        }
+
+        System.out.print("2. Attempting to connect to Railway Cloud Database... ");
+        try (Connection conn = getConnection()) {
+            System.out.println("[OK]");
+            System.out.println("=> System successfully connected to the live database!\n");
+        } catch (SQLException e) {
+            System.out.println("[FAILED]");
+            System.err.println("Database Error: " + e.getMessage());
+        }
+    }
 
     // [Process: Database Connection Initialization]
     // Method to establish connection to the database
@@ -158,6 +181,10 @@ public class UTHMCourseRegistrationSystem {
     // [Process: Main System Initialization Loop]
     // The entry point of the program
     public static void main(String[] args) {
+
+        // Test and print the database connection progress before loading the main menu
+        DatabaseConnection.testConnectionOnStartup();
+
         int choice = 0;
         // Main menu loop
         do {
