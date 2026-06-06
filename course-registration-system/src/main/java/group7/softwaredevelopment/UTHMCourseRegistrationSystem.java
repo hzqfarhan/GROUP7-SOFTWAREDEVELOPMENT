@@ -13,16 +13,16 @@ class DatabaseConnection {
     public static void testConnectionOnStartup() {
         System.out.println("Initiating system startup...");
         System.out.print("1. Loading environment variables... ");
-        
+
         String url = dotenv.get("MYSQL_URL");
-        if(url != null) {
+        if (url != null) {
             System.out.println("[OK]");
         } else {
             System.out.println("[FAILED - Missing MYSQL_URL in .env]");
             return;
         }
 
-        System.out.print("2. Attempting to connect to Railway Cloud Database... ");
+        System.out.print("2. Attempting to connect to NovaCloud Database... ");
         try (Connection conn = getConnection()) {
             System.out.println("[OK]");
             System.out.println("=> System successfully connected to the live database!\n");
@@ -40,14 +40,16 @@ class DatabaseConnection {
         String user = dotenv.get("MYSQL_USER");
         String password = dotenv.get("MYSQL_PASSWORD");
 
-        // Returns a Connection object that other parts of the program use to execute SQL queries
+        // Returns a Connection object that other parts of the program use to execute
+        // SQL queries
         return DriverManager.getConnection(url, user, password);
     }
 }
 
 // [OOP Element: Classes & Attributes]
 // Base class representing a general person
-// Demonstrates encapsulation by protecting the 'name' field and exposing it through getter and setter
+// Demonstrates encapsulation by protecting the 'name' field and exposing it
+// through getter and setter
 class Person {
     String name;
 
@@ -76,7 +78,8 @@ class Person {
 }
 
 // [OOP Element: Inheritance]
-// Student class that inherits from Person, reuse its properties with specialized attributes
+// Student class that inherits from Person, reuse its properties with
+// specialized attributes
 class Student extends Person {
     String matricNumber;
 
@@ -95,19 +98,20 @@ class Student extends Person {
 
     // [OOP Element: Methods]
     // [Data Structure: RDBMS]
-    // Method to calculate the total credit hours a student is currently registered for
+    // Method to calculate the total credit hours a student is currently registered
+    // for
     // Process: Executes a SQL query (SUM and JOIN) on the database
     public int getTotalCreditHours() {
         int total = 0;
         // SQL query to sum up credit hours of all courses registered by this student
         String query = "SELECT SUM(c.credit_hours) AS total_credits FROM student_courses sc JOIN courses c ON sc.course_code = c.course_code WHERE sc.matric_number = ?";
-        
+
         // Try-with-resources automatically closes database connections when done
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, this.matricNumber); // Insert matric number into the query
             ResultSet rs = stmt.executeQuery();
-            
+
             // Get the total credit if result is found
             if (rs.next())
                 total = rs.getInt("total_credits");
@@ -120,12 +124,13 @@ class Student extends Person {
     // [OOP Element: Methods]
     // [Data Structure: RDBMS]
     // Method to check if the student is already registered for a specific course
-    // Process: Looks up existential data records across structural relational tables
+    // Process: Looks up existential data records across structural relational
+    // tables
     public boolean isRegistered(String courseCode) {
         // SQL query to look for a matching record
         String query = "SELECT 1 FROM student_courses WHERE matric_number = ? AND course_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, this.matricNumber);
             stmt.setString(2, courseCode);
             // Returns true if a record exists, false otherwise
@@ -157,11 +162,25 @@ class Course {
 
     // [OOP Element: Accessors/Getters]
     // Getters for course attributes
-    public String getCourseCode() { return courseCode; }
-    public String getCourseName() { return courseName; }
-    public int getCreditHours() { return creditHours; }
-    public int getMaxSeats() { return maxSeats; }
-    public int getEnrolledSeats() { return enrolledSeats; }
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public int getCreditHours() {
+        return creditHours;
+    }
+
+    public int getMaxSeats() {
+        return maxSeats;
+    }
+
+    public int getEnrolledSeats() {
+        return enrolledSeats;
+    }
 
     // [OOP Element: Methods]
     // Helper method to check if the course has reached maximum capacity
@@ -227,7 +246,7 @@ public class UTHMCourseRegistrationSystem {
         // Query to verify admin credentials
         String loginQuery = "SELECT 1 FROM admins WHERE username = ? AND password = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(loginQuery)) {
+                PreparedStatement stmt = conn.prepareStatement(loginQuery)) {
             stmt.setString(1, username);
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
@@ -248,27 +267,46 @@ public class UTHMCourseRegistrationSystem {
 
         System.out.println("\nLogin successful!");
         int choice = 0;
-        
+
         // Admin Operations Loop
         do {
             System.out.println("\n--- Admin Menu ---");
-            System.out.println("1. Add New Student\n2. Remove Student\n3. View All Students\n4. Search Student\n5. Add New Course\n6. Remove Course\n7. View All Courses\n8. Search Course\n9. Back to Main Menu");
+            System.out.println(
+                    "1. Add New Student\n2. Remove Student\n3. View All Students\n4. Search Student\n5. Add New Course\n6. Remove Course\n7. View All Courses\n8. Search Course\n9. Back to Main Menu");
             System.out.print("\nSelect operation: ");
             choice = input.nextInt();
             input.nextLine();
 
             // Route to specific admin functions
             switch (choice) {
-                case 1: addStudent(); break;
-                case 2: removeStudent(); break;
-                case 3: viewAllStudents(); break;
-                case 4: searchStudent(); break;
-                case 5: addCourse(); break;
-                case 6: removeCourse(); break;
-                case 7: viewAllCourses(); break;
-                case 8: searchCourse(); break;
-                case 9: break; // Returns to main menu
-                default: System.out.println("Invalid selection.");
+                case 1:
+                    addStudent();
+                    break;
+                case 2:
+                    removeStudent();
+                    break;
+                case 3:
+                    viewAllStudents();
+                    break;
+                case 4:
+                    searchStudent();
+                    break;
+                case 5:
+                    addCourse();
+                    break;
+                case 6:
+                    removeCourse();
+                    break;
+                case 7:
+                    viewAllCourses();
+                    break;
+                case 8:
+                    searchCourse();
+                    break;
+                case 9:
+                    break; // Returns to main menu
+                default:
+                    System.out.println("Invalid selection.");
             }
         } while (choice != 9);
     }
@@ -282,10 +320,10 @@ public class UTHMCourseRegistrationSystem {
         String name = input.nextLine();
         System.out.print("Enter Matric Number: ");
         String matric = input.nextLine();
-        
+
         String query = "INSERT INTO students (matric_number, name) VALUES (?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, matric);
             stmt.setString(2, name);
             stmt.executeUpdate(); // Execute the INSERT command
@@ -300,10 +338,10 @@ public class UTHMCourseRegistrationSystem {
     public static void removeStudent() {
         System.out.print("Enter Matric Number to remove: ");
         String matric = input.nextLine();
-        
+
         String query = "DELETE FROM students WHERE matric_number = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, matric);
             stmt.executeUpdate(); // Execute the DELETE command
             System.out.println("\nSuccess: Student removed.");
@@ -317,8 +355,8 @@ public class UTHMCourseRegistrationSystem {
     public static void viewAllStudents() {
         String query = "SELECT matric_number, name FROM students";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
             System.out.println("\nRegistered Students:");
             // Loop through all results and print them
             while (rs.next())
@@ -332,10 +370,10 @@ public class UTHMCourseRegistrationSystem {
     public static void searchStudent() {
         System.out.print("Enter Matric Number to search: ");
         String matric = input.nextLine();
-        
+
         String query = "SELECT name, matric_number FROM students WHERE matric_number = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, matric);
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
@@ -358,11 +396,11 @@ public class UTHMCourseRegistrationSystem {
         System.out.print("Enter Maximum Seats: ");
         int seats = input.nextInt();
         input.nextLine();
-        
+
         // enrolled_seats starts at 0 by default
         String query = "INSERT INTO courses (course_code, course_name, credit_hours, max_seats, enrolled_seats) VALUES (?, ?, ?, ?, 0)";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, code);
             stmt.setString(2, name);
             stmt.setInt(3, credits);
@@ -379,10 +417,10 @@ public class UTHMCourseRegistrationSystem {
     public static void removeCourse() {
         System.out.print("Enter Course Code to remove: ");
         String code = input.nextLine();
-        
+
         String query = "DELETE FROM courses WHERE course_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, code);
             stmt.executeUpdate();
             System.out.println("\nSuccess: Course removed.");
@@ -395,8 +433,8 @@ public class UTHMCourseRegistrationSystem {
     public static void viewAllCourses() {
         String query = "SELECT * FROM courses";
         try (Connection conn = DatabaseConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(query)) {
             System.out.println("\nAvailable Courses:");
             while (rs.next())
                 System.out.println("- " + rs.getString("course_code") + ": " + rs.getString("course_name")
@@ -410,10 +448,10 @@ public class UTHMCourseRegistrationSystem {
     public static void searchCourse() {
         System.out.print("Enter Course Code to search: ");
         String code = input.nextLine();
-        
+
         String query = "SELECT * FROM courses WHERE course_code = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, code);
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
@@ -431,16 +469,17 @@ public class UTHMCourseRegistrationSystem {
         System.out.print("\nEnter your Matric Number: ");
         String matric = input.nextLine(); // Get input from user
         Student currentStudent = null;
-        
+
         String query = "SELECT name, matric_number FROM students WHERE matric_number = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, matric);
             ResultSet rs = stmt.executeQuery();
-            // If student exists (in database), create a Student object to manage their session
+            // If student exists (in database), create a Student object to manage their
+            // session
             if (rs.next())
                 currentStudent = new Student(rs.getString("name"), rs.getString("matric_number"));
-        } catch (SQLException e) { //Ignored exception block
+        } catch (SQLException e) { // Ignored exception block
         }
 
         // Show error if student does not exist
@@ -453,23 +492,34 @@ public class UTHMCourseRegistrationSystem {
         // Student Operations Menu Loop
         do {
             System.out.println("\n--- Student Menu --- (" + currentStudent.getName() + ")");
-            System.out.println("1. View Available Courses\n2. Register for a Course\n3. Drop a Course\n4. View My Courses\n5. Back to Main Menu");
+            System.out.println(
+                    "1. View Available Courses\n2. Register for a Course\n3. Drop a Course\n4. View My Courses\n5. Back to Main Menu");
             System.out.print("Select operation: ");
             choice = input.nextInt();
             input.nextLine(); // Clear the scanner buffer
-            
+
             // Route to specific student functions
             switch (choice) {
-                case 1: viewAllCourses(); break;
-                case 2: registerCourseAction(currentStudent); break;
-                case 3: dropCourseAction(currentStudent); break;
-                case 4: viewMyCourses(currentStudent); break;
-                case 5: break;
+                case 1:
+                    viewAllCourses();
+                    break;
+                case 2:
+                    registerCourseAction(currentStudent);
+                    break;
+                case 3:
+                    dropCourseAction(currentStudent);
+                    break;
+                case 4:
+                    viewMyCourses(currentStudent);
+                    break;
+                case 5:
+                    break;
             }
         } while (choice != 5);
     }
 
-    // [Requirements Check (9): Student can register for courses with validation checks]
+    // [Requirements Check (9): Student can register for courses with validation
+    // checks]
     // [Process: Course Registration Validation & ACID Execution]
     // [Data Structure: RDBMS]
     // Logic for a student attempting to register for a course
@@ -477,7 +527,7 @@ public class UTHMCourseRegistrationSystem {
         System.out.print("Enter Course Code to register: ");
         String code = input.nextLine();
         Course c = null;
-        
+
         try (Connection conn = DatabaseConnection.getConnection()) {
             // First, fetch the course details to validate the request
             String courseQuery = "SELECT * FROM courses WHERE course_code = ?";
@@ -488,7 +538,7 @@ public class UTHMCourseRegistrationSystem {
                     c = new Course(rs.getString("course_code"), rs.getString("course_name"), rs.getInt("credit_hours"),
                             rs.getInt("max_seats"), rs.getInt("enrolled_seats"));
             }
-            
+
             // Validation Checks
             if (c == null) {
                 System.out.println("Error: Course does not exist.");
@@ -502,10 +552,10 @@ public class UTHMCourseRegistrationSystem {
                 System.out.println("Error: Exceeds " + MAX_CREDITS + " credits.");
             } else {
                 // All checks passed; proceed with registration
-                
+
                 // Disable auto-commit to run multiple queries as a single transaction
-                //Ensures no partial updates if one query fails
-                conn.setAutoCommit(false); 
+                // Ensures no partial updates if one query fails
+                conn.setAutoCommit(false);
                 try {
                     // Step 1: Map the student to the course
                     String insertMapping = "INSERT INTO student_courses (matric_number, course_code) VALUES (?, ?)";
@@ -514,20 +564,21 @@ public class UTHMCourseRegistrationSystem {
                         stmt1.setString(2, code);
                         stmt1.executeUpdate();
                     }
-                    
+
                     // Step 2: Increase the enrolled seat count for the course
                     String updateSeats = "UPDATE courses SET enrolled_seats = enrolled_seats + 1 WHERE course_code = ?";
                     try (PreparedStatement stmt2 = conn.prepareStatement(updateSeats)) {
                         stmt2.setString(1, code);
                         stmt2.executeUpdate();
                     }
-                    
+
                     // If both queries succeed, commit the transaction to save changes
                     conn.commit();
                     System.out.println("\nSuccess! Registered for " + c.getCourseCode());
                 } catch (SQLException ex) {
                     // If any query fails, undo (rollback) all changes to prevent corrupted data
-                    //Prevents situations where student is registered but seat counts aren't updated
+                    // Prevents situations where student is registered but seat counts aren't
+                    // updated
                     conn.rollback();
                 } finally {
                     // Always turn auto-commit back on to avoid affecting future operations
@@ -535,7 +586,7 @@ public class UTHMCourseRegistrationSystem {
                 }
             }
         } catch (SQLException e) {
-            //Handle errors related to database or transaction management
+            // Handle errors related to database or transaction management
         }
     }
 
@@ -546,7 +597,7 @@ public class UTHMCourseRegistrationSystem {
         viewMyCourses(s); // Show current classes first
         System.out.print("Enter Course Code to drop: ");
         String code = input.nextLine();
-        
+
         // Ensure they are actually registered for it
         if (s.isRegistered(code)) {
             try (Connection conn = DatabaseConnection.getConnection()) {
@@ -560,14 +611,14 @@ public class UTHMCourseRegistrationSystem {
                         stmt1.setString(2, code);
                         stmt1.executeUpdate();
                     }
-                    
+
                     // Step 2: Decrease the enrolled seat count for the course
                     String updateSeats = "UPDATE courses SET enrolled_seats = enrolled_seats - 1 WHERE course_code = ?";
                     try (PreparedStatement stmt2 = conn.prepareStatement(updateSeats)) {
                         stmt2.setString(1, code);
                         stmt2.executeUpdate();
                     }
-                    
+
                     // Apply changes
                     conn.commit();
                     System.out.println("\nCourse dropped successfully.");
@@ -586,10 +637,11 @@ public class UTHMCourseRegistrationSystem {
     // [Requirements Check (11): Student can view their registered courses]
     // [Data Structure: RDBMS]
     public static void viewMyCourses(Student s) {
-        // Joins the courses and student_courses tables to find matching records for this student
+        // Joins the courses and student_courses tables to find matching records for
+        // this student
         String query = "SELECT c.course_code, c.course_name, c.credit_hours FROM courses c JOIN student_courses sc ON c.course_code = sc.course_code WHERE sc.matric_number = ?";
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setString(1, s.getMatricNumber());
             ResultSet rs = stmt.executeQuery();
             System.out.println("\nYour Registered Courses:");
