@@ -417,7 +417,7 @@ public class UTHMCourseRegistrationSystem {
             stmt.setString(1, code);
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
-                System.out.println("Found: " + rs.getString("course_code"));
+                System.out.println("Found: " + rs.getString("course_code") + " - " + rs.getString("course_name"));
             else
                 System.out.println("Not found.");
         } catch (SQLException e) {
@@ -595,6 +595,7 @@ public class UTHMCourseRegistrationSystem {
             System.out.println("\nYour Registered Courses:");
             while (rs.next())
                 System.out.println("- " + rs.getString("course_code") + ": " + rs.getString("course_name"));
+            System.out.println("\nTotal Credits: " + s.getTotalCreditHours() + "/" + MAX_CREDITS);
         } catch (SQLException e) { // Ignored exception block
         }
     }
