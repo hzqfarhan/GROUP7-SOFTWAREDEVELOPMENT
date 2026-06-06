@@ -455,7 +455,7 @@ public class UTHMCourseRegistrationSystem {
             stmt.setString(1, code);
             ResultSet rs = stmt.executeQuery();
             if (rs.next())
-                System.out.println("Found: " + rs.getString("course_code") + " - " + rs.getString("course_name"));
+                System.out.println("Found: " + rs.getString("course_code") + " - " + rs.getString("course_name") + " | Seats: " + rs.getInt("enrolled_seats") + "/" + rs.getInt("max_seats"));
             else
                 System.out.println("Not found.");
         } catch (SQLException e) {
