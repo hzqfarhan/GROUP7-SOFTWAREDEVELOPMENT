@@ -3,8 +3,8 @@ import java.util.Scanner;
 import io.github.cdimascio.dotenv.Dotenv;
 
 // [OOP Element: Classes & Attributes]
-// Manages the connection to the MySQL database
-// This class encapsulates database configuration
+// Manages The connection to the MySQL database
+// This Class Encapsulates database configuration
 class DatabaseConnection {
     // Loads environment variables from a .env file securely
     private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
